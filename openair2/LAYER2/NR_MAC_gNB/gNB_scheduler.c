@@ -66,24 +66,26 @@ void dump_mac_stats(gNB_MAC_INST *gNB)
   NR_UE_info_t *UE_info = &gNB->UE_info;
   int num = 1;
   for (int UE_id = UE_info->list.head; UE_id >= 0; UE_id = UE_info->list.next[UE_id]) {
-    LOG_I(MAC, "UE ID %d RNTI %04x (%d/%d) PH %d dB PCMAX %d dBm\n",
+    NR_mac_stats_t *stats = &UE_info->mac_stats[UE_id];
+    const int avg_rsrp = stats->num_rsrp_meas > 0 ? stats->cumul_rsrp / stats->num_rsrp_meas : 0;
+    LOG_I(MAC, "UE ID %d RNTI %04x (%d/%d) PH %d dB PCMAX %d dBm, average RSRP %d (%d meas)\n",
           UE_id,
           UE_info->rnti[UE_id],
           num++,
           UE_info->num_UEs,
           UE_info->UE_sched_ctrl[UE_id].ph,
-          UE_info->UE_sched_ctrl[UE_id].pcmax);
-    NR_mac_stats_t *stats = &UE_info->mac_stats[UE_id];
-    const int avg_rsrp = stats->num_rsrp_meas > 0 ? stats->cumul_rsrp / stats->num_rsrp_meas : 0;
-    LOG_I(MAC, "UE %d: dlsch_rounds %d/%d/%d/%d, dlsch_errors %d, average RSRP %d (%d meas)\n",
+          UE_info->UE_sched_ctrl[UE_id].pcmax,
+          avg_rsrp,
+          stats->num_rsrp_meas);
+    const NR_UE_sched_ctrl_t *sched_ctrl = &UE_info->UE_sched_ctrl[UE_id];
+    LOG_I(MAC, "UE %d: dlsch_rounds %d/%d/%d/%d, dlsch_errors %d, BLER %.5f MCS %d\n",
           UE_id,
           stats->dlsch_rounds[0], stats->dlsch_rounds[1],
           stats->dlsch_rounds[2], stats->dlsch_rounds[3], stats->dlsch_errors,
-          avg_rsrp, stats->num_rsrp_meas);
+          sched_ctrl->dl_bler_stats.bler, sched_ctrl->dl_bler_stats.mcs);
     stats->num_rsrp_meas = 0;
     stats->cumul_rsrp = 0 ;
     LOG_I(MAC, "UE %d: dlsch_total_bytes %d\n", UE_id, stats->dlsch_total_bytes);
-    const NR_UE_sched_ctrl_t *sched_ctrl = &UE_info->UE_sched_ctrl[UE_id];
     LOG_I(MAC, "UE %d: ulsch_rounds %d/%d/%d/%d, ulsch_errors %d, PUSCH SNR %2.1f dB, PUCCH SNR %2.1f dB, noise rssi %2.1f dB\n",
           UE_id,
           stats->ulsch_rounds[0], stats->ulsch_rounds[1],
