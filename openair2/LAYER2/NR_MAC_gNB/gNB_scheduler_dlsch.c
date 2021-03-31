@@ -378,6 +378,52 @@ int nr_write_ce_dlsch_pdu(module_id_t module_idP,
   return offset;
 }
 
+#define BLER_UPDATE_FRAME 10
+#define BLER_TARGET 0.10f
+#define BLER_THRESHOLD 0.03f
+#define BLER_FILTER 0.9f
+int get_mcs_from_bler(module_id_t mod_id, int CC_id, frame_t frame, sub_frame_t slot, int UE_id)
+{
+  const NR_ServingCellConfigCommon_t *scc = RC.nrmac[mod_id]->common_channels[CC_id].ServingCellConfigCommon;
+  const int n = nr_slots_per_frame[*scc->ssbSubcarrierSpacing];
+
+  NR_DL_bler_stats_t *bler_stats = &RC.nrmac[mod_id]->UE_info.UE_sched_ctrl[UE_id].dl_bler_stats;
+  /* first call: everything is zero. Initialize to sensible default */
+  if (bler_stats->last_frame_slot == 0 && bler_stats->mcs == 0) {
+    bler_stats->last_frame_slot = frame * n + slot;
+    bler_stats->mcs = 9;
+    bler_stats->bler = BLER_THRESHOLD;
+  }
+  const int now = frame * n + slot;
+  int diff = now - bler_stats->last_frame_slot;
+  if (diff < 0) // wrap around
+    diff += 1024 * n;
+
+  const uint8_t old_mcs = bler_stats->mcs;
+  if (diff < BLER_UPDATE_FRAME * n)
+    return old_mcs; // no update
+
+  // last update is longer than x frames ago
+  const NR_mac_stats_t *stats = &RC.nrmac[mod_id]->UE_info.mac_stats[UE_id];
+  const int dtx = stats->dlsch_rounds[0] - bler_stats->dlsch_rounds[0];
+  const int dretx = stats->dlsch_rounds[1] - bler_stats->dlsch_rounds[1];
+  const float bler_window = dtx > 0 ? (float) dretx / dtx : bler_stats->bler;
+  bler_stats->bler = BLER_FILTER * bler_stats->bler + (1 - BLER_FILTER) * bler_window;
+
+  int new_mcs = old_mcs;
+  if (bler_stats->bler < BLER_TARGET - BLER_THRESHOLD && old_mcs < 25 && dtx > 9)
+    new_mcs += 1;
+  else if (bler_stats->bler > BLER_TARGET + BLER_THRESHOLD && old_mcs > 6)
+    new_mcs -= 1;
+  // else we are within threshold boundaries
+
+  bler_stats->last_frame_slot = now;
+  bler_stats->mcs = new_mcs;
+  memcpy(bler_stats->dlsch_rounds, stats->dlsch_rounds, sizeof(stats->dlsch_rounds));
+  LOG_D(MAC, "%4d.%2d MCS %d -> %d (dtx %d, dretx %d, BLER wnd %.3f avg %.6f)\n", frame, slot, old_mcs, new_mcs, dtx, dretx, bler_window, bler_stats->bler);
+  return new_mcs;
+}
+
 void nr_store_dlsch_buffer(module_id_t module_id,
                            frame_t frame,
                            sub_frame_t slot) {
@@ -568,7 +614,7 @@ void pf_dl(module_id_t module_id,
         continue;
 
       /* Calculate coeff */
-      sched_pdsch->mcs = 9;
+      sched_pdsch->mcs = get_mcs_from_bler(module_id, /* CC_id = */ 0, frame, slot, UE_id);
       uint32_t tbs = pf_tbs[ps->mcsTableIdx][sched_pdsch->mcs];
       coeff_ue[UE_id] = (float) tbs / thr_ue[UE_id];
       LOG_D(MAC,"b %d, thr_ue[%d] %f, tbs %d, coeff_ue[%d] %f\n",

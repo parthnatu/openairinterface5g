@@ -413,6 +413,12 @@ typedef struct NR_UE_harq {
 
 //! fixme : need to enhace for the multiple TB CQI report
 
+typedef struct NR_DL_bler_stats {
+  frame_t last_frame_slot;
+  float bler;
+  uint8_t mcs;
+  int dlsch_rounds[8];
+} NR_DL_bler_stats_t;
 
 //
 /*! As per spec 38.214 section 5.2.1.4.2
@@ -553,6 +559,9 @@ typedef struct {
   uint32_t num_total_bytes;
   /// per-LC status data
   mac_rlc_status_resp_t rlc_status[MAX_NUM_LCID];
+
+  /// Estimation of HARQ from BLER
+  NR_DL_bler_stats_t dl_bler_stats;
 
   uint16_t ta_frame;
   int16_t ta_update;
