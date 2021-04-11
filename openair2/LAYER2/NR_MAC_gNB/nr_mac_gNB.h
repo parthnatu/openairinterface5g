@@ -739,6 +739,8 @@ typedef struct gNB_MAC_INST_s {
   NR_CellGroupConfig_t *secondaryCellGroupCommon;
   NR_Type0_PDCCH_CSS_config_t type0_PDCCH_CSS_config[64];
 
+  double dl_bler_target_upper;
+  double dl_bler_target_lower;
 } gNB_MAC_INST;
 
 #endif /*__LAYER2_NR_MAC_GNB_H__ */

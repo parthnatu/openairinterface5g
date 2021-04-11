@@ -55,6 +55,8 @@
 #define CONFIG_STRING_MACRLC_REMOTE_S_PORTC                "remote_s_portc"
 #define CONFIG_STRING_MACRLC_LOCAL_S_PORTD                 "local_s_portd"
 #define CONFIG_STRING_MACRLC_REMOTE_S_PORTD                "remote_s_portd"
+#define CONFIG_STRING_MACRLC_DL_BLER_TARGET_UPPER          "dl_bler_target_upper"
+#define CONFIG_STRING_MACRLC_DL_BLER_TARGET_LOWER          "dl_bler_target_lower"
 
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -79,6 +81,8 @@
 {CONFIG_STRING_MACRLC_REMOTE_S_PORTC,                    NULL,     0,          uptr:NULL,           defintval:50020,           TYPE_UINT,     0},        \
 {CONFIG_STRING_MACRLC_LOCAL_S_PORTD,                     NULL,     0,          uptr:NULL,           defintval:50021,           TYPE_UINT,     0},        \
 {CONFIG_STRING_MACRLC_REMOTE_S_PORTD,                    NULL,     0,          uptr:NULL,           defintval:50021,           TYPE_UINT,     0},        \
+{CONFIG_STRING_MACRLC_DL_BLER_TARGET_UPPER,   "Upper threshold of BLER to decrease DL MCS",   0, dblptr:NULL,  defdblval:0.15,  TYPE_DOUBLE,  0},        \
+{CONFIG_STRING_MACRLC_DL_BLER_TARGET_LOWER,   "Lower threshold of BLER to increase DL MCS",   0, dblptr:NULL,  defdblval:0.05,  TYPE_DOUBLE,  0},        \
 }
 #define MACRLC_CC_IDX                                          0
 #define MACRLC_TRANSPORT_N_PREFERENCE_IDX                      1
@@ -97,5 +101,7 @@
 #define MACRLC_REMOTE_S_PORTC_IDX                              14
 #define MACRLC_LOCAL_S_PORTD_IDX                               15
 #define MACRLC_REMOTE_S_PORTD_IDX                              16
+#define MACRLC_DL_BLER_TARGET_UPPER_IDX                        17
+#define MACRLC_DL_BLER_TARGET_LOWER_IDX                        18
 /*---------------------------------------------------------------------------------------------------------------------------------------------------------*/
 #endif

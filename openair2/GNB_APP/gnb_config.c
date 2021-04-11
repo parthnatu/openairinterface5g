@@ -53,7 +53,7 @@
 
 //#include "L1_paramdef.h"
 #include "L1_nr_paramdef.h"
-#include "MACRLC_paramdef.h"
+#include "MACRLC_nr_paramdef.h"
 #include "common/config/config_userapi.h"
 //#include "RRC_config_tools.h"
 #include "gnb_paramdef.h"
@@ -667,6 +667,9 @@ void RCconfig_nr_macrlc() {
       }else { // other midhaul
         AssertFatal(1==0,"MACRLC %d: %s unknown southbound midhaul\n",j,*(MacRLC_ParamList.paramarray[j][MACRLC_TRANSPORT_S_PREFERENCE_IDX].strptr));
       } 
+
+      RC.nrmac[j]->dl_bler_target_upper = *(MacRLC_ParamList.paramarray[j][MACRLC_DL_BLER_TARGET_UPPER_IDX].dblptr);
+      RC.nrmac[j]->dl_bler_target_lower = *(MacRLC_ParamList.paramarray[j][MACRLC_DL_BLER_TARGET_LOWER_IDX].dblptr);
     }//  for (j=0;j<RC.nb_nr_macrlc_inst;j++)
   }else {// MacRLC_ParamList.numelt > 0
     AssertFatal (0,"No " CONFIG_STRING_MACRLC_LIST " configuration found");     
