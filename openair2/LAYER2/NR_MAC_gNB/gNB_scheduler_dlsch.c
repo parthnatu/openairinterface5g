@@ -457,7 +457,7 @@ int get_mcs_from_bler(module_id_t mod_id, int CC_id, frame_t frame, sub_frame_t 
   if (bler_stats->rd2_bler > nrmac->dl_rd2_bler_threshold && old_mcs > 6) {
     new_mcs -= 2;
   } else if (bler_stats->rd2_bler < nrmac->dl_rd2_bler_threshold) {
-    if (bler_stats->bler < nrmac->dl_bler_target_lower && old_mcs < 25 && dtx > 9)
+    if (bler_stats->bler < nrmac->dl_bler_target_lower && old_mcs < 28 && dtx > 9)
       new_mcs += 1;
     else if (bler_stats->bler > nrmac->dl_bler_target_upper && old_mcs > 6)
       new_mcs -= 1;
