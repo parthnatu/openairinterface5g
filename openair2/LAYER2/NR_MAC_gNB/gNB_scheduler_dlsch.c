@@ -419,6 +419,7 @@ int get_mcs_from_bler(module_id_t mod_id, int CC_id, frame_t frame, sub_frame_t 
     bler_stats->last_frame_slot = frame * n + slot;
     bler_stats->mcs = 9;
     bler_stats->bler = (nrmac->dl_bler_target_lower + nrmac->dl_bler_target_upper) / 2;
+    bler_stats->rd2_bler = nrmac->dl_rd2_bler_threshold;
   }
   const int now = frame * n + slot;
   int diff = now - bler_stats->last_frame_slot;
@@ -433,20 +434,29 @@ int get_mcs_from_bler(module_id_t mod_id, int CC_id, frame_t frame, sub_frame_t 
   const NR_mac_stats_t *stats = &nrmac->UE_info.mac_stats[UE_id];
   const int dtx = stats->dlsch_rounds[0] - bler_stats->dlsch_rounds[0];
   const int dretx = stats->dlsch_rounds[1] - bler_stats->dlsch_rounds[1];
+  const int dretx2 = stats->dlsch_rounds[2] - bler_stats->dlsch_rounds[2];
   const float bler_window = dtx > 0 ? (float) dretx / dtx : bler_stats->bler;
+  const float rd2_bler_wnd = dtx > 0 ? (float) dretx2 / dtx : bler_stats->rd2_bler;
   bler_stats->bler = BLER_FILTER * bler_stats->bler + (1 - BLER_FILTER) * bler_window;
+  bler_stats->rd2_bler = BLER_FILTER / 4 * bler_stats->rd2_bler + (1 - BLER_FILTER / 4) * rd2_bler_wnd;
 
   int new_mcs = old_mcs;
-  if (bler_stats->bler < nrmac->dl_bler_target_lower && old_mcs < 25 && dtx > 9)
-    new_mcs += 1;
-  else if (bler_stats->bler > nrmac->dl_bler_target_upper && old_mcs > 6)
-    new_mcs -= 1;
-  // else we are within threshold boundaries
+  /* first ensure that number of 2nd retx is below threshold. If this is the
+   * case, use 1st retx to adjust faster */
+  if (bler_stats->rd2_bler > nrmac->dl_rd2_bler_threshold && old_mcs > 6) {
+    new_mcs -= 2;
+  } else if (bler_stats->rd2_bler < nrmac->dl_rd2_bler_threshold) {
+    if (bler_stats->bler < nrmac->dl_bler_target_lower && old_mcs < 25 && dtx > 9)
+      new_mcs += 1;
+    else if (bler_stats->bler > nrmac->dl_bler_target_upper && old_mcs > 6)
+      new_mcs -= 1;
+    // else we are within threshold boundaries
+  }
 
   bler_stats->last_frame_slot = now;
   bler_stats->mcs = new_mcs;
   memcpy(bler_stats->dlsch_rounds, stats->dlsch_rounds, sizeof(stats->dlsch_rounds));
-  LOG_D(MAC, "%4d.%2d MCS %d -> %d (dtx %d, dretx %d, BLER wnd %.3f avg %.6f)\n", frame, slot, old_mcs, new_mcs, dtx, dretx, bler_window, bler_stats->bler);
+  LOG_D(MAC, "%4d.%2d MCS %d -> %d (dtx %d, dretx %d, BLER wnd %.3f avg %.6f, dretx2 %d, RD2 BLER wnd %.3f avg %.6f)\n", frame, slot, old_mcs, new_mcs, dtx, dretx, bler_window, bler_stats->bler, dretx2, rd2_bler_wnd, bler_stats->rd2_bler);
   return new_mcs;
 }
 

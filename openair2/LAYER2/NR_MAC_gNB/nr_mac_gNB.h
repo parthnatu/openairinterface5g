@@ -416,6 +416,7 @@ typedef struct NR_UE_harq {
 typedef struct NR_DL_bler_stats {
   frame_t last_frame_slot;
   float bler;
+  float rd2_bler;
   uint8_t mcs;
   int dlsch_rounds[8];
 } NR_DL_bler_stats_t;
@@ -741,6 +742,7 @@ typedef struct gNB_MAC_INST_s {
 
   double dl_bler_target_upper;
   double dl_bler_target_lower;
+  double dl_rd2_bler_threshold;
 } gNB_MAC_INST;
 
 #endif /*__LAYER2_NR_MAC_GNB_H__ */
