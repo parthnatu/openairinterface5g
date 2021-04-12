@@ -427,11 +427,22 @@ int get_mcs_from_bler(module_id_t mod_id, int CC_id, frame_t frame, sub_frame_t 
     diff += 1024 * n;
 
   const uint8_t old_mcs = bler_stats->mcs;
+  const NR_mac_stats_t *stats = &nrmac->UE_info.mac_stats[UE_id];
+  const int dret3x = stats->dlsch_rounds[3] - bler_stats->dlsch_rounds[3];
+  if (dret3x > 0) {
+    /* if there is a third retransmission, reset MCS and averaging window to
+     * stabilize transmission */
+    bler_stats->last_frame_slot = now;
+    if (bler_stats->mcs > 9)
+      bler_stats->mcs >>= 1;
+    memcpy(bler_stats->dlsch_rounds, stats->dlsch_rounds, sizeof(stats->dlsch_rounds));
+    LOG_D(MAC, "%4d.%2d: %d retx in 3rd round, setting MCS to %d and restarting window\n", frame, slot, dret3x, bler_stats->mcs);
+    return bler_stats->mcs;
+  }
   if (diff < BLER_UPDATE_FRAME * n)
     return old_mcs; // no update
 
   // last update is longer than x frames ago
-  const NR_mac_stats_t *stats = &nrmac->UE_info.mac_stats[UE_id];
   const int dtx = stats->dlsch_rounds[0] - bler_stats->dlsch_rounds[0];
   const int dretx = stats->dlsch_rounds[1] - bler_stats->dlsch_rounds[1];
   const int dretx2 = stats->dlsch_rounds[2] - bler_stats->dlsch_rounds[2];
