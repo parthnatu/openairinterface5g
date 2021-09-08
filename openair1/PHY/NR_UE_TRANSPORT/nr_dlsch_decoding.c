@@ -510,6 +510,7 @@ uint32_t nr_dlsch_decoding(PHY_VARS_NR_UE *phy_vars_ue,
       }
 
       VCD_SIGNAL_DUMPER_DUMP_FUNCTION_BY_NAME(VCD_SIGNAL_DUMPER_FUNCTIONS_DLSCH_LDPC, VCD_FUNCTION_IN);
+      nrLDPC_initcall(p_decParams, (int8_t*)&pl[0], llrProcBuf);
       no_iteration_ldpc = nrLDPC_decoder(p_decParams,
                                          (int8_t *)&pl[0],
                                          llrProcBuf,
@@ -969,6 +970,7 @@ uint32_t  nr_dlsch_decoding_mthread(PHY_VARS_NR_UE *phy_vars_ue,
 #if UE_TIMING_TRACE
     start_meas(dlsch_turbo_decoding_stats);
 #endif
+
     LOG_D(PHY,"mthread AbsSubframe %d.%d Start LDPC segment %d/%d \n",frame%1024,nr_slot_rx,r,harq_process->C-1);
     /*for (int cnt =0; cnt < (kc-2)*p_decParams->Z; cnt++){
       inv_d[cnt] = (1)*harq_process->d[r][cnt];
@@ -986,7 +988,7 @@ uint32_t  nr_dlsch_decoding_mthread(PHY_VARS_NR_UE *phy_vars_ue,
     for (i=0, j=0; j < ((kc*harq_process->Z)>>4)+1;  i+=2, j++) {
       pl[j] = _mm_packs_epi16(pv[i],pv[i+1]);
     }
-
+    nrLDPC_initcall(p_decParams, (int8_t*)&pl[0], llrProcBuf);
     no_iteration_ldpc = nrLDPC_decoder(p_decParams,
                                        (int8_t *)&pl[0],
                                        llrProcBuf,
@@ -1366,6 +1368,7 @@ void nr_dlsch_decoding_process(void *arg) {
 #if UE_TIMING_TRACE
     start_meas(dlsch_turbo_decoding_stats);
 #endif
+
     //      LOG_D(PHY,"AbsSubframe %d.%d Start LDPC segment %d/%d \n",frame%1024,subframe,r,harq_process->C-1);
     /*
             for (int cnt =0; cnt < (kc-2)*p_decParams->Z; cnt++){
@@ -1385,7 +1388,7 @@ void nr_dlsch_decoding_process(void *arg) {
     for (i=0, j=0; j < ((kc*harq_process->Z)>>4)+1;  i+=2, j++) {
       pl[j] = _mm_packs_epi16(pv[i],pv[i+1]);
     }
-
+    nrLDPC_initcall(p_decParams, (int8_t*)&pl[0], llrProcBuf);
     no_iteration_ldpc = nrLDPC_decoder(p_decParams,
                                        (int8_t *)&pl[0],
                                        llrProcBuf,
