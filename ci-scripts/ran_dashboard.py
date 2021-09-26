@@ -78,10 +78,21 @@ class gDashboard:
         row =[dt_string]
         self.sheet.insert_row(row, index=1, value_input_option='RAW')
 
-        #line 2 empty
+        #line 2 is for the test names (links to jenkins pipeline), updated at the end 
+
         #line 3 is for the column names
         i=3
         row =["MR","Created_at","Author","Title","Assignee", "Reviewer", "CAN START","IN PROGRESS","COMPLETED","Review Form","OK MERGE","Merge conflicts"]
+
+        #test 1
+        row.append("# PASS")
+        row.append("# FAIL")
+        row.append("Links to Fails")
+        #test 2
+        row.append("# PASS")
+        row.append("# FAIL")
+        row.append("Links to Fails")
+
         self.sheet.insert_row(row, index=i, value_input_option='RAW')
 
         #line 4 onward, MR data lines
@@ -166,6 +177,22 @@ class gDashboard:
         body = {"requests": requests}    
         self.ss.batch_update(body)        
             
+        #line 2 is for the test names 
+        #add MR hyperlinks in a list of requests to be sent as one update batch; this to save API calls (quotas) 
+        requests=[]
+        rowIndex=1
+        colIndex=12
+        hyperlink= '\"'+"https://jenkins-oai.eurecom.fr/view/RAN/job/RAN-NSA-Mini-Module/"+'\"'
+        text= '\"'+'NSA Mini'+'"'
+        requests.append(self.addHyperlink(hyperlink, text, destinationSheetName, rowIndex, colIndex))
+        rowIndex=1
+        colIndex=15
+        hyperlink= '\"'+"https://jenkins-oai.eurecom.fr/view/RAN/job/RAN-SA-Module/"+'\"'
+        text= '\"'+'NR SA'+'"'
+        requests.append(self.addHyperlink(hyperlink, text, destinationSheetName, rowIndex, colIndex))
+
+        body = {"requests": requests}
+        self.ss.batch_update(body)
 
     
     def addHyperlink(self, hyperlink, text, destinationSheetName, rowIndex, colIndex):
@@ -207,17 +234,17 @@ class gDashboard:
                     "copyPaste": {
                         "source": {
                             "sheetId": sourceSheetId,
-                            "startRowIndex": 0,
+                            "startRowIndex": 1,
                             "endRowIndex": 40,
                             "startColumnIndex": 0,
-                            "endColumnIndex": 12
+                            "endColumnIndex": 19
                         },
                         "destination": {
                             "sheetId": destinationSheetId,
-                            "startRowIndex": 0,
+                            "startRowIndex": 1,
                             "endRowIndex": 40,
                             "startColumnIndex": 0,
-                            "endColumnIndex": 12
+                            "endColumnIndex": 19
                         },
                         "pasteType": "PASTE_FORMAT"
                     }
@@ -280,9 +307,26 @@ class gDashboard:
                 }
         )
     
-        body = {"requests": requests}    
-        self.ss.batch_update(body)
   
+        #group MR related columns
+        sheetId = self.ss.worksheet(destinationSheetName)._properties['sheetId']
+        requests.append(
+                {
+                    "addDimensionGroup": {
+                        "range": {
+                            "dimension": "COLUMNS",
+                            "sheetId": sheetId,
+                            "startIndex": 3,
+                            "endIndex": 12
+                        },
+                    }
+                }
+        )
+
+        body = {"requests": requests}
+        self.ss.batch_update(body)
+
+
 
 
 def main():
