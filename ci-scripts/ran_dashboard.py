@@ -155,7 +155,7 @@ class gDashboard:
                         n+=1
 
             #add test results, notice : NSA only for the moment (code to be refactored for multiple tests afterwards) 
-            cmd="python3 sql_connect_dev.py "+str(self.d[x]['iid'])
+            cmd="python3 /home/oaicicd/mysql/sql_connect_dev.py "+str(self.d[x]['iid'])
 
             process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
             output = process.stdout.readline()
@@ -188,7 +188,7 @@ class gDashboard:
             text= '\"'+str(self.d[x]['iid'])+'"'
             requests.append(self.addHyperlink(hyperlink, text, destinationSheetName, rowIndex, colIndex))
 
-            cmd="python3 sql_connect_dev.py "+str(self.d[x]['iid'])
+            cmd="python3 /home/oaicicd/mysql/sql_connect_dev.py "+str(self.d[x]['iid'])
             process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
             output = process.stdout.readline()
             tmp=output.decode("utf-8")
