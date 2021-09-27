@@ -58,6 +58,14 @@ void init_LLR_DMA(t_nrLDPC_dec_params* p_decParams, int8_t* p_llr, int8_t* p_out
 	
 }
 
+char *clutil_getstrdev(int intdev) {
+	char *strdev[]={"default","cpu","gpu","accel","custom"};
+   if(intdev >=0 && intdev < sizeof(strdev)/sizeof(char *))
+     return strdev[intdev];
+   else {
+     return "??";
+   }
+}
 
 /* from here: entry points in decoder shared lib */
 int ldpc_autoinit(void) {   // called by the library loader 
@@ -76,7 +84,7 @@ int ldpc_autoinit(void) {   // called by the library loader
 		cl_device_type devtype;
 		rt = clGetDeviceInfo(devices[j],CL_DEVICE_TYPE, sizeof(cl_device_type),&devtype,NULL);
 		AssertFatal(rt == CL_SUCCESS, "clGetDeviceInfo error %d\n" , (int)rt); 
-		LOG_I(HW,"Device %i, type %d\n", j,(int)devtype);
+		LOG_I(HW,"Device %i, type %d %s\n", j,(int)devtype, clutil_getstrdev(devtype));
       }
   }
   return 0;  
