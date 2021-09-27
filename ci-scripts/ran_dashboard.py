@@ -87,11 +87,11 @@ class gDashboard:
         #test 1
         row.append("# PASS")
         row.append("# FAIL")
-        row.append("Links to Fails")
+        row.append("Last Fail")
         #test 2
         row.append("# PASS")
         row.append("# FAIL")
-        row.append("Links to Fails")
+        row.append("Last Fail")
 
         self.sheet.insert_row(row, index=i, value_input_option='RAW')
 
