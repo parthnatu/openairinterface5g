@@ -57,7 +57,7 @@ class gDashboard:
         #worksheet
         self.sheet = self.ss.worksheet(worksheet)
         self.ss.del_worksheet(self.sheet) #start by deleting the old sheet
-        self.sheet = self.ss.add_worksheet(title=worksheet, rows="100", cols="20") #create a new one
+        self.sheet = self.ss.add_worksheet(title=worksheet, rows="100", cols="30") #create a new one
         
         self.d = {} #data dictionary
 
@@ -154,15 +154,29 @@ class gDashboard:
                             found=True
                         n+=1
 
+            #add test results, notice : NSA only for the moment (code to be refactored for multiple tests afterwards) 
+            cmd="python3 sql_connect_dev.py "+str(self.d[x]['iid'])
+
+            process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
+            output = process.stdout.readline()
+
+            tmp=output.decode("utf-8")
+            tmp=tmp.replace('\'','"')
+            tmp=tmp.rstrip()
+            testres = json.loads(tmp)
+
 
             #build final row to be inserted, the first column is left empty for now, will be filled afterward with hyperlinks to gitlab MR
             row =["", str(date_time_obj.date()),str(self.d[x]['author']['name']),str(self.d[x]['title']),\
             assignee, reviewer,\
-            milestone1,milestone2,milestone3,review_form,milestone4,conflicts]
+            milestone1,milestone2,milestone3,review_form,milestone4,conflicts,\
+            testres['PASS'],testres['FAIL']]
             
+
             #insert the row to worksheet
             self.sheet.insert_row(row, index=i, value_input_option='RAW')
-        
+
+
         
         #add MR hyperlinks in a list of requests to be sent as one update batch; this to save API calls (quotas) 
         i=3
@@ -173,6 +187,19 @@ class gDashboard:
             hyperlink= '\"'+"https://gitlab.eurecom.fr/oai/openairinterface5g/-/merge_requests/"+ str(self.d[x]['iid']) +'\"'
             text= '\"'+str(self.d[x]['iid'])+'"'
             requests.append(self.addHyperlink(hyperlink, text, destinationSheetName, rowIndex, colIndex))
+
+            cmd="python3 sql_connect_dev.py "+str(self.d[x]['iid'])
+            process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE)
+            output = process.stdout.readline()
+            tmp=output.decode("utf-8")
+            tmp=tmp.replace('\'','"')
+            tmp=tmp.rstrip()
+            testres = json.loads(tmp)
+            if len(testres['fails list'])>0:
+                colIndex=14
+                hyperlink= '\"'+ testres['fails link'][0] +'\"'
+                text= '\"'+testres['fails list'][0]+'"'
+                requests.append(self.addHyperlink(hyperlink, text, destinationSheetName, rowIndex, colIndex))
             i=i+1
         body = {"requests": requests}    
         self.ss.batch_update(body)        
