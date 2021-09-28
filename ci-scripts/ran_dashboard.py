@@ -350,8 +350,8 @@ class gDashboard:
 #                }
 #        )
 #
-#        body = {"requests": requests}
-#        self.ss.batch_update(body)
+        body = {"requests": requests}
+        self.ss.batch_update(body)
 
 
 
