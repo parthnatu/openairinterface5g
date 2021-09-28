@@ -336,22 +336,22 @@ class gDashboard:
     
   
         #group MR related columns
-        sheetId = self.ss.worksheet(destinationSheetName)._properties['sheetId']
-        requests.append(
-                {
-                    "addDimensionGroup": {
-                        "range": {
-                            "dimension": "COLUMNS",
-                            "sheetId": sheetId,
-                            "startIndex": 3,
-                            "endIndex": 12
-                        },
-                    }
-                }
-        )
-
-        body = {"requests": requests}
-        self.ss.batch_update(body)
+#        sheetId = self.ss.worksheet(destinationSheetName)._properties['sheetId']
+#        requests.append(
+#                {
+#                    "addDimensionGroup": {
+#                        "range": {
+#                            "dimension": "COLUMNS",
+#                            "sheetId": sheetId,
+#                            "startIndex": 3,
+#                            "endIndex": 12
+#                        },
+#                    }
+#                }
+#        )
+#
+#        body = {"requests": requests}
+#        self.ss.batch_update(body)
 
 
 
