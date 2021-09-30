@@ -2292,8 +2292,6 @@ class OaiCiTest():
 				iperf_cmd = 'echo $USER; nohup bin/iperf -s -u 2>&1 > ' + server_filename
 				cmd = 'docker exec -it prod-trf-gen /bin/bash -c \"' + iperf_cmd + '\"' 
 				SSH.command(cmd,'\$',5)
-				SSH.command('docker cp prod-trf-gen:' + server_filename + ' ' + EPC.SourceCodePath, '\$', 5)
-				SSH.copyin(EPC.IPAddress, EPC.UserName, EPC.Password, EPC.SourceCodePath + '/' + server_filename, '.')
 				SSH.close()
 
 				#client side UE
@@ -2304,7 +2302,13 @@ class OaiCiTest():
 				SSH.command('iperf -B ' + UE_IPAddress + ' -c ' +  trf_gen_IP + ' '  + self.iperf_args + ' 2>&1 > ' + client_filename, '\$', int(iperf_time)*5.0)
 				SSH.close()
 
-				#copy the 2 resulting files locally
+				#once client is done, retrieve the server file from container to EPC Host
+				SSH.open(EPC.IPAddress, EPC.UserName, EPC.Password)
+				SSH.command('docker cp prod-trf-gen:' + server_filename + ' ' + EPC.SourceCodePath, '\$', 5)
+				SSH.copyin(EPC.IPAddress, EPC.UserName, EPC.Password, EPC.SourceCodePath + '/' + server_filename, '.')
+				SSH.close()
+
+				#copy the 2 resulting files locally 
 				SSH.copyin(Module_UE.HostIPAddress, Module_UE.HostUsername, Module_UE.HostPassword, client_filename, '.')
 				SSH.copyin(EPC.IPAddress, EPC.UserName, EPC.Password, server_filename, '.')
 				#send for analysis
