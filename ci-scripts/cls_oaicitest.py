@@ -2247,7 +2247,7 @@ class OaiCiTest():
 			SSH.command('docker inspect --format="TRF_IP_ADDR = {{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" prod-trf-gen', '\$', 5)
 			result = re.search('TRF_IP_ADDR = (?P<trf_ip_addr>[0-9\.]+)', SSH.getBefore())
 			if result is not None:
-				trf-gen-IP = result.group('trf_ip_addr')
+				trf_gen_IP = result.group('trf_ip_addr')
 			SSH.close()
 			#kill iperf processes on UE side before (in case there are still some remaining)
 			SSH.open(Module_UE.HostIPAddress, Module_UE.HostUsername, Module_UE.HostPassword)
@@ -2301,7 +2301,7 @@ class OaiCiTest():
 				client_filename = 'iperf_client_' + self.testCase_id + '_' + self.ue_id + '.log'
 				cmd = 'rm '+ client_filename
 				SSH.command(cmd,'\$',5)
-				SSH.command('iperf -B ' + UE_IPAddress + ' -c ' +  trf-gen-IP + ' '  + self.iperf_args + ' 2>&1 > ' + client_filename, '\$', int(iperf_time)*5.0)
+				SSH.command('iperf -B ' + UE_IPAddress + ' -c ' +  trf_gen_IP + ' '  + self.iperf_args + ' 2>&1 > ' + client_filename, '\$', int(iperf_time)*5.0)
 				SSH.close()
 
 				#copy the 2 resulting files locally
