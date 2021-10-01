@@ -143,7 +143,6 @@ int ldpc_autoinit(void) {   // called by the library loader
 		AssertFatal(rt == CL_SUCCESS, "clGetDeviceInfo MAX_WORK_ITEM_SIZES error %d\n" , (int)rt);
 		for(int k=0; k<ocl.ocldev[j].max_WID;k++)
 		  LOG_I(HW,"Device %i, max Work Items size for dimension: %d %u\n", j,k,(uint32_t)ocl.ocldev[j].max_WIS[k]);
-		
       }
   }
   return 0;  
